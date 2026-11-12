@@ -1,0 +1,1 @@
+void *Window_new();
