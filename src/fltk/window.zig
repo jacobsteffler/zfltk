@@ -4,9 +4,9 @@ const Window = @This();
 
 ptr: *anyopaque,
 
-pub fn new() Window {
+pub fn new(w: u32, h: u32, title: [:0]const u8) Window {
     return .{
-        .ptr = c.Window_new().?,
+        .ptr = c.Window_new(@intCast(w), @intCast(h), @constCast(title)).?,
     };
 }
 

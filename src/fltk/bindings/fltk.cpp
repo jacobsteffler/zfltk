@@ -1,7 +1,7 @@
 #include <FL/Fl_Window.H>
 
-extern "C" Fl_Window *Window_new() {
-    return new Fl_Window(300, 100, "Hi");
+extern "C" Fl_Window *Window_new(int w, int h, char *title) {
+    return new Fl_Window(w, h, title);
 }
 
 extern "C" void Window_show(Fl_Window *w) {
