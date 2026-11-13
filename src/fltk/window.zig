@@ -1,11 +1,19 @@
 const c = @import("c");
 
-pub const Window = struct {
-    ptr: *anyopaque,
-};
+const Window = @This();
 
-pub fn init() Window {
+ptr: *anyopaque,
+
+pub fn new() Window {
     return .{
         .ptr = c.Window_new().?,
     };
+}
+
+pub fn show(self: *const Window) void {
+    c.Window_show(self.ptr);
+}
+
+pub fn end(self: *const Window) void {
+    c.Window_end(self.ptr);
 }

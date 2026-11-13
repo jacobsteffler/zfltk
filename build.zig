@@ -33,9 +33,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = false,
     });
-    // TODO need include paths both here and below?
-    fltk_bindings.addIncludePath(b.path("fltk"));
-    fltk_bindings.addIncludePath(fltk_out_dir);
 
     const fltk_mod = b.addModule("fltk", .{
         .root_source_file = b.path("src/fltk/fltk.zig"),
