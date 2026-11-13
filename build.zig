@@ -1,13 +1,22 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    const os = b.graph.host.result.os.tag;
+    const msvc: std.Target.Query = .{ .abi = .msvc };
+    const target = if (os == .windows)
+        b.standardTargetOptions(.{
+            .whitelist = &.{ msvc },
+            .default_target = msvc,
+        })
+    else b.standardTargetOptions(.{});
 
     const cmake_conf = b.addSystemCommand(&.{ "cmake", "--log-level=WARNING" });
     cmake_conf.addDirectoryArg2(b.path("fltk"), .{});
     cmake_conf.addArgs(&.{
         "-DCMAKE_BUILD_TYPE=Release",
+        "-DFLTK_MSVC_RUNTIME_DLL=OFF",
         "-DFLTK_BUILD_FLTK_OPTIONS=OFF",
         "-DFLTK_BUILD_GL=OFF",
         "-DFLTK_BUILD_FLUID=OFF",
@@ -22,8 +31,8 @@ pub fn build(b: *std.Build) void {
 
     const fltk_compile = b.addSystemCommand(&.{ "cmake", "--build" });
     fltk_compile.addDirectoryArg2(fltk_out_dir, .{});
+    fltk_compile.addArgs(&.{ "--config", "Release" });
 
-    // Step just to compile fltk
     const fltk_step = b.step("fltk", "Build FLTK");
     fltk_step.dependOn(&fltk_compile.step);
 
@@ -31,14 +40,13 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/fltk/bindings/fltk.h"),
         .target = target,
         .optimize = optimize,
-        .link_libc = false,
     });
 
     const fltk_mod = b.addModule("fltk", .{
         .root_source_file = b.path("src/fltk/fltk.zig"),
         .target = target,
         .optimize = optimize,
-        .link_libcpp = true,
+        .link_libcpp = (os != .windows),
         .imports = &.{.{
             .name = "c",
             .module = fltk_bindings.createModule(),
@@ -51,11 +59,27 @@ pub fn build(b: *std.Build) void {
 
     fltk_mod.addIncludePath(b.path("fltk"));
     fltk_mod.addIncludePath(fltk_out_dir);
-    fltk_mod.addObjectFile(fltk_out_dir.path(b, "lib/libfltk.a"));
 
-    // TODO OS-specific
-    fltk_mod.linkFramework("Cocoa", .{});
-    fltk_mod.linkFramework("ScreenCaptureKit", .{});
+    if (os == .windows) {
+        fltk_mod.addObjectFile(fltk_out_dir.path(b, "lib/Release/fltk.lib"));
+    } else {
+        fltk_mod.addObjectFile(fltk_out_dir.path(b, "lib/libfltk.a"));
+    }
+
+    if (os == .macos) {
+        fltk_mod.linkFramework("Cocoa", .{});
+        fltk_mod.linkFramework("ScreenCaptureKit", .{});
+    } else if (os == .windows) {
+        fltk_mod.linkSystemLibrary("gdi32", .{});
+        fltk_mod.linkSystemLibrary("user32", .{});
+        fltk_mod.linkSystemLibrary("comdlg32", .{});
+        fltk_mod.linkSystemLibrary("comctl32", .{});
+        fltk_mod.linkSystemLibrary("ole32", .{});
+        fltk_mod.linkSystemLibrary("shell32", .{});
+        fltk_mod.linkSystemLibrary("gdiplus", .{});
+        fltk_mod.linkSystemLibrary("winspool", .{});
+        fltk_mod.linkSystemLibrary("ws2_32", .{});
+    }
 
     const exe = b.addExecutable(.{
         .name = "zfltk",
