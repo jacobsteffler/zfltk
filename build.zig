@@ -36,25 +36,15 @@ pub fn build(b: *std.Build) void {
     const fltk_step = b.step("fltk", "Build FLTK");
     fltk_step.dependOn(&fltk_compile.step);
 
-    const fltk_bindings = b.addTranslateC(.{
-        .root_source_file = b.path("src/fltk/bindings/fltk.h"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     const fltk_mod = b.addModule("fltk", .{
         .root_source_file = b.path("src/fltk/fltk.zig"),
         .target = target,
         .optimize = optimize,
         .link_libcpp = (os != .windows),
-        .imports = &.{.{
-            .name = "c",
-            .module = fltk_bindings.createModule(),
-        }},
     });
 
     fltk_mod.addCSourceFile(.{
-        .file = b.path("src/fltk/bindings/fltk.cpp"),
+        .file = b.path("src/fltk/bindings.cpp"),
     });
 
     fltk_mod.addIncludePath(b.path("fltk"));

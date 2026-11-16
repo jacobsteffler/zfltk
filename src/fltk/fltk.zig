@@ -1,7 +1,9 @@
-const c = @import("c");
+const c = @import("bindings.zig");
 
-pub const Window = @import("Window.zig");
+const widget = @import("widget.zig");
+
+pub const new = widget.new;
 
 pub fn run() void {
-    c.run();
+    c.Fl_run();
 }

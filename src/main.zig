@@ -1,11 +1,13 @@
 const std = @import("std");
-const fltk = @import("fltk");
-
-const Window = fltk.Window;
+const fl = @import("fltk");
 
 pub fn main() void {
-    const win: Window = .new(640, 480, "Test!");
-    win.end();
-    win.show();
-    fltk.run();
+
+    const w = fl.new(.window, .{.w = 500, .h = 500, .l = "Hello"});
+
+    const btn = fl.new(.button, .{});
+    btn.show();
+
+    w.show();
+    fl.run();
 }
