@@ -50,10 +50,13 @@ pub fn build(b: *std.Build) void {
     fltk_mod.addIncludePath(b.path("fltk"));
     fltk_mod.addIncludePath(fltk_out_dir);
 
+    // The library is copied out of the build tree so that whatever links it waits for the compile.
+    const fltk_lib = b.addWriteFiles();
+    fltk_lib.step.dependOn(&fltk_compile.step);
     if (os == .windows) {
-        fltk_mod.addObjectFile(fltk_out_dir.path(b, "lib/Release/fltk.lib"));
+        fltk_mod.addObjectFile(fltk_lib.addCopyFile(fltk_out_dir.path(b, "lib/Release/fltk.lib"), "fltk.lib"));
     } else {
-        fltk_mod.addObjectFile(fltk_out_dir.path(b, "lib/libfltk.a"));
+        fltk_mod.addObjectFile(fltk_lib.addCopyFile(fltk_out_dir.path(b, "lib/libfltk.a"), "libfltk.a"));
     }
 
     if (os == .macos) {
@@ -83,7 +86,6 @@ pub fn build(b: *std.Build) void {
             }},
         }),
     });
-    exe.step.dependOn(fltk_step);
 
     b.installArtifact(exe);
 
@@ -94,8 +96,26 @@ pub fn build(b: *std.Build) void {
     run_cmd.step.dependOn(b.getInstallStep());
     run_cmd.addPassthruArgs();
 
+    const gen = b.addExecutable(.{
+        .name = "gen",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/fltk/gen.zig"),
+            .target = b.graph.host,
+        }),
+    });
+    const gen_update = b.addUpdateSourceFiles();
+    gen_update.addCopyFileToSource(b.addRunArtifact(gen).captureStdOut(.{}), "src/fltk/classes.zig");
+    const gen_step = b.step("gen", "Regenerate src/fltk/classes.zig");
+    gen_step.dependOn(&gen_update.step);
+
     const exe_tests = b.addTest(.{ .root_module = exe.root_module, });
     const run_exe_tests = b.addRunArtifact(exe_tests);
+    const fltk_tests = b.addTest(.{ .root_module = fltk_mod });
+    const run_fltk_tests = b.addRunArtifact(fltk_tests);
+    const gen_tests = b.addTest(.{ .root_module = gen.root_module });
+    const run_gen_tests = b.addRunArtifact(gen_tests);
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_exe_tests.step);
+    test_step.dependOn(&run_fltk_tests.step);
+    test_step.dependOn(&run_gen_tests.step);
 }

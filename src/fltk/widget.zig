@@ -1,88 +1,116 @@
 const std = @import("std");
 const c = @import("bindings.zig");
+const fl = @import("fltk.zig");
 const meta = @import("meta.zig");
 
-pub const Kind = enum {
-    window,
-    button,
+pub const Options = struct {
+    x: ?i32 = null,
+    y: ?i32 = null,
+    w: ?i32 = null,
+    h: ?i32 = null,
+    /// Copied, so it doesn't need to outlive the call.
+    label: ?[:0]const u8 = null,
+    /// Copied, so it doesn't need to outlive the call.
+    tooltip: ?[:0]const u8 = null,
+    box: ?fl.BoxType = null,
+    color: ?fl.Color = null,
 };
 
-pub fn new(comptime kind: Kind, options: Options(kind)) Widget(kind) {
-    // TODO accept options parameter of type Options(Kind)
-    // Options(Kind) is a type-specific options struct.
-    // Options(Kind) has two functions:
-    // - toCtorArgs() -> produces array of args to pass to th e ctor with @args
-    // - applyOpiton() -> applies all fields of Options(Kind) that aren't handled by the ctor
-    // TODO also do more autogeneration:
-    // - CPP macro for conversion functions
-    // - Optionally generate zig bindings for conversion functions with @extern()
-    // - Can probably do at least one of the above for constructors too
-    // -- (Maybe not in CPP because the ctor arguments are variable)
-
-
-
-    const ctor = constructor(kind);
-    const args = options.toCtorArgs();
-    const handle = @call(.auto, ctor, args);
-
-    // TODO more initialization
-
-    return .{ .handle = handle };
+pub fn apply(self: anytype, opts: anytype) void {
+    if (opts.tooltip) |v| self.setTooltip(v);
+    if (opts.box) |v| self.setBox(v);
+    if (opts.color) |v| self.setColor(v);
 }
 
-fn Widget(comptime kind: Kind) type {
+pub fn Methods(comptime Self: type) type {
     return struct {
-        handle: Handle(kind),
+        /// Creates a widget without a parent. See `Group.add` to create one inside a group.
+        pub fn create(opts: Self.Options) *Self {
+            if (!@hasDecl(Self.def, "new")) @compileError(@typeName(Self) ++ " cannot be created directly");
+            const self: *Self = Self.def.new(
+                opts.x orelse 0,
+                opts.y orelse 0,
+                opts.w orelse 0,
+                opts.h orelse 0,
+                if (opts.label) |l| l.ptr else null,
+            );
+            meta.applyOptions(Self.def, self, opts);
+            return self;
+        }
 
-        const Self = @This();
+        /// Destroys the widget and all of its children. Inside a callback, use `destroyLater`.
+        pub fn destroy(self: *Self) void {
+            c.Fl_Widget_delete(self.as(fl.Widget));
+        }
 
-        pub fn show(self: Self) void {
-            const widget_handle = meta.cast(self.handle, c.Fl_Widget);
-            c.Fl_Widget_show(widget_handle);
+        /// Hides the widget now and destroys it, with all of its children, once control
+        /// is back in the event loop. Safe to call from a callback, even the widget's own.
+        pub fn destroyLater(self: *Self) void {
+            c.Fl_delete_widget(self.as(fl.Widget));
+        }
+
+        /// Casts to a class this one inherits from.
+        pub fn as(self: *Self, comptime T: type) *T {
+            if (comptime !meta.inherits(Self.def, T.def))
+                @compileError(@typeName(Self) ++ " does not inherit from " ++ @typeName(T));
+            return @ptrCast(self);
+        }
+
+        pub fn show(self: *Self) void {
+            c.Fl_Widget_show(self.as(fl.Widget));
+        }
+
+        pub fn hide(self: *Self) void {
+            c.Fl_Widget_hide(self.as(fl.Widget));
+        }
+
+        pub fn redraw(self: *Self) void {
+            c.Fl_Widget_redraw(self.as(fl.Widget));
+        }
+
+        pub fn label(self: *Self) [:0]const u8 {
+            return std.mem.span(c.Fl_Widget_label(self.as(fl.Widget)) orelse "");
+        }
+
+        /// The text is copied, so it doesn't need to outlive the call.
+        pub fn setLabel(self: *Self, text: ?[:0]const u8) void {
+            c.Fl_Widget_copy_label(self.as(fl.Widget), if (text) |t| t.ptr else null);
+        }
+
+        /// The text is copied, so it doesn't need to outlive the call.
+        pub fn setTooltip(self: *Self, text: ?[:0]const u8) void {
+            c.Fl_Widget_copy_tooltip(self.as(fl.Widget), if (text) |t| t.ptr else null);
+        }
+
+        pub fn box(self: *Self) fl.BoxType {
+            return c.Fl_Widget_box(self.as(fl.Widget));
+        }
+
+        pub fn setBox(self: *Self, box_type: fl.BoxType) void {
+            c.Fl_Widget_set_box(self.as(fl.Widget), box_type);
+        }
+
+        pub fn color(self: *Self) fl.Color {
+            return c.Fl_Widget_color(self.as(fl.Widget));
+        }
+
+        pub fn setColor(self: *Self, background: fl.Color) void {
+            c.Fl_Widget_set_color(self.as(fl.Widget), background);
+        }
+
+        /// `ctx` is a pointer that is handed back to `handler`. It must outlive the widget.
+        pub fn setCallback(
+            self: *Self,
+            ctx: anytype,
+            comptime handler: fn (@TypeOf(ctx), *Self) void,
+        ) void {
+            const thunk = meta.callback(Self, @TypeOf(ctx), handler);
+            c.Fl_Widget_set_callback(self.as(fl.Widget), thunk, @ptrCast(@constCast(ctx)));
+        }
+
+        /// Runs the callback as if the user had triggered it.
+        pub fn doCallback(self: *Self) void {
+            c.Fl_Widget_do_callback(self.as(fl.Widget));
         }
     };
 }
-
-fn constructor(comptime kind: Kind) CtorFn(kind) {
-    return @field(c, ctorName(kind));
-}
-
-fn ctorName(comptime kind: Kind) []const u8 {
-    const HandleType = Handle(kind);
-    const CppType = @typeInfo(HandleType).pointer.child;
-    const cppTypeName = comptime meta.baseName(CppType);
-    return cppTypeName ++ "_new";
-}
-
-fn CtorFn(comptime kind: Kind) type {
-    return @TypeOf(@field(c, ctorName(kind)));
-}
-
-pub fn Handle(comptime kind: Kind) type {
-    return switch (kind) {
-        .button => *c.Fl_Button,
-        .window => *c.Fl_Window,
-    };
-}
-
-fn CtorArgs(comptime kind: Kind) type {
-    const ctor = CtorFn(kind);
-    return std.meta.ArgsTuple(ctor);
-}
-
-fn Options(comptime kind: Kind) type {
-    return switch (kind) {
-        .window => WindowOptions,
-        .button => struct { pub fn toCtorArgs(self: @This()) CtorArgs(.button) { _=self; return .{}; } },
-    };
-}
-
-const WindowOptions = struct {
-    w: c_int,
-    h: c_int,
-    l: [:0]const u8,
-
-    pub fn toCtorArgs(self: @This()) CtorArgs(.window) {
-        return .{ self.w, self.h, @constCast(self.l) };
-    }
-};
