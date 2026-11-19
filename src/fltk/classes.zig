@@ -99,8 +99,6 @@ pub const Button = opaque {
     pub const setCallback = defs.Widget.Methods(@This()).setCallback;
     pub const doCallback = defs.Widget.Methods(@This()).doCallback;
 
-    pub const value = defs.Button.Methods(@This()).value;
-    pub const setValue = defs.Button.Methods(@This()).setValue;
     pub const setShortcut = defs.Button.Methods(@This()).setShortcut;
 };
 

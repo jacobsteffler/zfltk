@@ -33,8 +33,6 @@ pub extern fn Fl_Window_set_modal(*fl.Window) void;
 
 // Button
 pub extern fn Fl_Button_new(c_int, c_int, c_int, c_int, ?[*:0]const u8) *fl.Button;
-pub extern fn Fl_Button_value(*fl.Button) c_int;
-pub extern fn Fl_Button_set_value(*fl.Button, c_int) void;
 pub extern fn Fl_Button_set_shortcut(*fl.Button, c_int) void;
 
 // Menu
