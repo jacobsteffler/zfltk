@@ -20,6 +20,8 @@ pub const Widget = opaque {
     pub const setBox = defs.Widget.Methods(@This()).setBox;
     pub const color = defs.Widget.Methods(@This()).color;
     pub const setColor = defs.Widget.Methods(@This()).setColor;
+    pub const subtype = defs.Widget.Methods(@This()).subtype;
+    pub const setSubtype = defs.Widget.Methods(@This()).setSubtype;
     pub const setCallback = defs.Widget.Methods(@This()).setCallback;
     pub const doCallback = defs.Widget.Methods(@This()).doCallback;
 };
@@ -42,12 +44,45 @@ pub const Group = opaque {
     pub const setBox = defs.Widget.Methods(@This()).setBox;
     pub const color = defs.Widget.Methods(@This()).color;
     pub const setColor = defs.Widget.Methods(@This()).setColor;
+    pub const subtype = defs.Widget.Methods(@This()).subtype;
+    pub const setSubtype = defs.Widget.Methods(@This()).setSubtype;
     pub const setCallback = defs.Widget.Methods(@This()).setCallback;
     pub const doCallback = defs.Widget.Methods(@This()).doCallback;
 
     pub const add = defs.Group.Methods(@This()).add;
     pub const adopt = defs.Group.Methods(@This()).adopt;
     pub const setResizable = defs.Group.Methods(@This()).setResizable;
+};
+
+pub const Flex = opaque {
+    pub const def = defs.Flex;
+    pub const Options = def.Options;
+
+    pub const create = defs.Widget.Methods(@This()).create;
+    pub const destroy = defs.Widget.Methods(@This()).destroy;
+    pub const destroyLater = defs.Widget.Methods(@This()).destroyLater;
+    pub const as = defs.Widget.Methods(@This()).as;
+    pub const show = defs.Widget.Methods(@This()).show;
+    pub const hide = defs.Widget.Methods(@This()).hide;
+    pub const redraw = defs.Widget.Methods(@This()).redraw;
+    pub const label = defs.Widget.Methods(@This()).label;
+    pub const setLabel = defs.Widget.Methods(@This()).setLabel;
+    pub const setTooltip = defs.Widget.Methods(@This()).setTooltip;
+    pub const box = defs.Widget.Methods(@This()).box;
+    pub const setBox = defs.Widget.Methods(@This()).setBox;
+    pub const color = defs.Widget.Methods(@This()).color;
+    pub const setColor = defs.Widget.Methods(@This()).setColor;
+    pub const subtype = defs.Widget.Methods(@This()).subtype;
+    pub const setSubtype = defs.Widget.Methods(@This()).setSubtype;
+    pub const setCallback = defs.Widget.Methods(@This()).setCallback;
+    pub const doCallback = defs.Widget.Methods(@This()).doCallback;
+
+    pub const adopt = defs.Group.Methods(@This()).adopt;
+    pub const setResizable = defs.Group.Methods(@This()).setResizable;
+
+    pub const Direction = defs.Flex.Direction;
+    pub const add = defs.Flex.Methods(@This()).add;
+    pub const setFixed = defs.Flex.Methods(@This()).setFixed;
 };
 
 pub const Window = opaque {
@@ -68,6 +103,8 @@ pub const Window = opaque {
     pub const setBox = defs.Widget.Methods(@This()).setBox;
     pub const color = defs.Widget.Methods(@This()).color;
     pub const setColor = defs.Widget.Methods(@This()).setColor;
+    pub const subtype = defs.Widget.Methods(@This()).subtype;
+    pub const setSubtype = defs.Widget.Methods(@This()).setSubtype;
     pub const setCallback = defs.Widget.Methods(@This()).setCallback;
     pub const doCallback = defs.Widget.Methods(@This()).doCallback;
 
@@ -96,6 +133,8 @@ pub const Button = opaque {
     pub const setBox = defs.Widget.Methods(@This()).setBox;
     pub const color = defs.Widget.Methods(@This()).color;
     pub const setColor = defs.Widget.Methods(@This()).setColor;
+    pub const subtype = defs.Widget.Methods(@This()).subtype;
+    pub const setSubtype = defs.Widget.Methods(@This()).setSubtype;
     pub const setCallback = defs.Widget.Methods(@This()).setCallback;
     pub const doCallback = defs.Widget.Methods(@This()).doCallback;
 
@@ -120,6 +159,8 @@ pub const Menu = opaque {
     pub const setBox = defs.Widget.Methods(@This()).setBox;
     pub const color = defs.Widget.Methods(@This()).color;
     pub const setColor = defs.Widget.Methods(@This()).setColor;
+    pub const subtype = defs.Widget.Methods(@This()).subtype;
+    pub const setSubtype = defs.Widget.Methods(@This()).setSubtype;
     pub const setCallback = defs.Widget.Methods(@This()).setCallback;
     pub const doCallback = defs.Widget.Methods(@This()).doCallback;
 
@@ -146,6 +187,8 @@ pub const MenuBar = opaque {
     pub const setBox = defs.Widget.Methods(@This()).setBox;
     pub const color = defs.Widget.Methods(@This()).color;
     pub const setColor = defs.Widget.Methods(@This()).setColor;
+    pub const subtype = defs.Widget.Methods(@This()).subtype;
+    pub const setSubtype = defs.Widget.Methods(@This()).setSubtype;
     pub const setCallback = defs.Widget.Methods(@This()).setCallback;
     pub const doCallback = defs.Widget.Methods(@This()).doCallback;
 

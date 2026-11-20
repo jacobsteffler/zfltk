@@ -2,6 +2,9 @@ const fl = @import("fltk.zig");
 
 pub const Callback = fn (*fl.Widget, ?*anyopaque) callconv(.c) void;
 
+pub extern const FL_FLEX_HORIZONTAL: u8;
+pub extern const FL_FLEX_VERTICAL: u8;
+
 // Core
 pub extern fn Fl_run() c_int;
 pub extern fn Fl_delete_widget(*fl.Widget) void;
@@ -18,6 +21,8 @@ pub extern fn Fl_Widget_box(*fl.Widget) fl.BoxType;
 pub extern fn Fl_Widget_set_box(*fl.Widget, fl.BoxType) void;
 pub extern fn Fl_Widget_color(*fl.Widget) fl.Color;
 pub extern fn Fl_Widget_set_color(*fl.Widget, fl.Color) void;
+pub extern fn Fl_Widget_type(*fl.Widget) u8;
+pub extern fn Fl_Widget_set_type(*fl.Widget, u8) void;
 pub extern fn Fl_Widget_set_callback(*fl.Widget, *const Callback, ?*anyopaque) void;
 pub extern fn Fl_Widget_do_callback(*fl.Widget) void;
 
@@ -25,6 +30,10 @@ pub extern fn Fl_Widget_do_callback(*fl.Widget) void;
 pub extern fn Fl_Group_new(c_int, c_int, c_int, c_int, ?[*:0]const u8) *fl.Group;
 pub extern fn Fl_Group_add(*fl.Group, *fl.Widget) void;
 pub extern fn Fl_Group_set_resizable(*fl.Group, ?*fl.Widget) void;
+
+// Flex
+pub extern fn Fl_Flex_new(c_int, c_int, c_int, c_int, ?[*:0]const u8) *fl.Flex;
+pub extern fn Fl_Flex_fixed(*fl.Flex, *fl.Widget, c_int) void;
 
 // Window
 pub extern fn Fl_Window_new(c_int, c_int, c_int, c_int, ?[*:0]const u8) *fl.Window;

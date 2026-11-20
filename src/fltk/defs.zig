@@ -12,6 +12,7 @@
 
 pub const Widget = @import("widget.zig");
 pub const Group = @import("group.zig");
+pub const Flex = @import("flex.zig");
 pub const Window = @import("window.zig");
 pub const Button = @import("button.zig");
 pub const Menu = @import("menu.zig");

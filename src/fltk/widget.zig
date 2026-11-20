@@ -98,6 +98,14 @@ pub fn Methods(comptime Self: type) type {
             c.Fl_Widget_set_color(self.as(fl.Widget), background);
         }
 
+        pub fn subtype(self: *Self) u8 {
+            return c.Fl_Widget_type(self.as(fl.Widget));
+        }
+
+        pub fn setSubtype(self: *Self, t: u8) void {
+            c.Fl_Widget_set_type(self.as(fl.Widget), t);
+        }
+
         /// `ctx` is a pointer that is handed back to `handler`. It must outlive the widget.
         pub fn setCallback(
             self: *Self,

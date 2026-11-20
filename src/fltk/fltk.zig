@@ -4,6 +4,7 @@ const types = @import("types.zig");
 
 pub const Widget = classes.Widget;
 pub const Group = classes.Group;
+pub const Flex = classes.Flex;
 pub const Window = classes.Window;
 pub const Button = classes.Button;
 pub const Menu = classes.Menu;
